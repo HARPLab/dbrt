@@ -38,8 +38,7 @@
 #include <boost/shared_ptr.hpp>
 #include <urdf/model.h>
 #include <boost/algorithm/string.hpp>
-
-
+#include <ros/package.h>
 
 #ifdef HAVE_V2
 #include "assimp/aiPostProcess.h"
@@ -100,16 +99,35 @@ public:
         }
 
         std::string filename_str = filename.string();
+        std::string package_str = p_description_path;
+
         std::string to_be_removed = "package://";
         std::string::size_type location =
                 filename_str.find(to_be_removed);
         if (location != std::string::npos)
+        {
             filename_str.erase(location, to_be_removed.length());
 
         std::string::size_type location_2 = filename_str.find("/");
         if (location_2 != std::string::npos)
+            {
+                std::string package_name = filename_str.substr(0, location_2);
             filename_str.erase(0, location_2);
-        filename = p_description_path / boost::filesystem::path(filename_str);
+
+                std::string package_path = ros::package::getPath(package_name);
+                if (!package_path.empty()) 
+                {
+                    package_str = package_path;
+                } 
+                else 
+                {
+                    std::cout << "failed to find package: " 
+                                << package_path << std::endl;
+                    exit(-1);
+                }
+            }
+        }
+        filename = package_str / boost::filesystem::path(filename_str);
 
         if(!boost::iequals(filename.extension().string(), ".stl"))
         {
