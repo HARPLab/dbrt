@@ -140,7 +140,9 @@ void KinematicsFromURDF::inject_offset_joints_and_links(
                                      camera_frame + "_YAW",
                                      camera_frame + "_ROLL"};
 
-    std::string current_parent_link = camera_frame + "_DEFAULT";
+    boost::shared_ptr<urdf::Link> current_parent_link;
+    urdf.getLink(camera_frame + "_DEFAULT", current_parent_link);
+    // std::string current_parent_link = camera_frame + "_DEFAULT";
 
     for (int i = 0; i < dofs.size(); ++i)
     {
@@ -152,13 +154,10 @@ void KinematicsFromURDF::inject_offset_joints_and_links(
         joint->axis.y = double(i == 1 || i == 4);
         joint->axis.z = double(i == 2 || i == 5);
         joint->child_link_name = dofs[i] + "_LINK";
-        joint->parent_link_name = current_parent_link;
+        joint->parent_link_name = current_parent_link->name;
 
         // add joint
         urdf.joints_[joint->name] = joint;
-
-        // update parent link name for next joint
-        current_parent_link = joint->child_link_name;
 
         // last dof has no link
         if (i > 4) continue;
@@ -166,6 +165,10 @@ void KinematicsFromURDF::inject_offset_joints_and_links(
         auto link = boost::make_shared<urdf::Link>();
         link->name = dofs[i] + "_LINK";
         link->parent_joint = joint;
+        link->setParent(current_parent_link);
+
+        // update parent link name for next joint
+        current_parent_link = link;
 
         // add link
         urdf.links_[link->name] = link;
@@ -180,6 +183,7 @@ void KinematicsFromURDF::inject_offset_joints_and_links(
     auto camera_leaf_link = boost::make_shared<urdf::Link>();
     camera_leaf_link->name = camera_frame;
     camera_leaf_link->parent_joint = urdf.joints_[dofs[5] + "_JOINT"];
+    camera_leaf_link->setParent(camera_root_link);
     urdf.links_[camera_frame] = camera_leaf_link;
 
     for (int i = 0; i < dofs.size() - 1; ++i)
