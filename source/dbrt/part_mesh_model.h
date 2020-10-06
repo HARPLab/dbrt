@@ -110,11 +110,11 @@ public:
         {
             filename_str.erase(location, to_be_removed.length());
 
-        std::string::size_type location_2 = filename_str.find("/");
-        if (location_2 != std::string::npos)
+            std::string::size_type location_2 = filename_str.find("/");
+            if (location_2 != std::string::npos)
             {
                 std::string package_name = filename_str.substr(0, location_2);
-            filename_str.erase(0, location_2);
+                filename_str.erase(0, location_2);
 
                 std::string package_path = ros::package::getPath(package_name);
                 if (!package_path.empty()) 
