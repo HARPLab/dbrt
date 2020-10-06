@@ -218,9 +218,9 @@ void KinematicsFromURDF::get_part_meshes(
     {
         // keep only the links descending from our root
         boost::shared_ptr<urdf::Link> tmp_link = links[i];
-        while (tmp_link->name.compare(rendering_root_left_) == 0 &&
-               tmp_link->name.compare(rendering_root_right_) == 0 &&
-               tmp_link->name.compare(global_root) == 0)
+        while (tmp_link->name.compare(rendering_root_left_) != 0 &&
+               tmp_link->name.compare(rendering_root_right_) != 0 &&
+               tmp_link->name.compare(global_root) != 0)
         {
             tmp_link = tmp_link->getParent();
         }
