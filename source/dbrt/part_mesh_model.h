@@ -46,6 +46,8 @@
 #include "assimp/assimp.h"
 #elif defined HAVE_V3
 #include "assimp/cimport.h"
+#include "assimp/config.h"
+#include "assimp/mesh.h"
 #include "assimp/postprocess.h"
 #include "assimp/scene.h"
 #endif
@@ -141,9 +143,14 @@ public:
             exit(-1);
         }
 
+        // remove points and lines during postprocessing
+        auto data_store = std::unique_ptr<aiPropertyStore, decltype(&aiReleasePropertyStore)>
+                (aiCreatePropertyStore(), &aiReleasePropertyStore);
+        aiSetImportPropertyInteger(data_store.get(), AI_CONFIG_PP_SBP_REMOVE, aiPrimitiveType_POINT | aiPrimitiveType_LINE);
         // load mesh -----------------------------------------------------------
-        scene_ = aiImportFile(filename.c_str(),
-                              aiProcessPreset_TargetRealtime_Quality);
+        scene_ = aiImportFileExWithProperties(filename.c_str(),
+                              aiProcessPreset_TargetRealtime_Quality,
+                              nullptr, data_store.get());
         if(scene_ == NULL)
         {
             std::cout << "error: assimp could not import mesh "
